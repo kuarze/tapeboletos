@@ -1002,13 +1002,13 @@
             document.getElementById('recaudacion-total-temporada').innerText = `$${recaudacionAcumuladaTemporada.toLocaleString()} MXN`;
         }
 
-        window.confirmarResetFuncionActual = async function() {
+      /*  window.confirmarResetFuncionActual = async function() {
             if (confirm(`¿Deseas reiniciar los 45 boletos únicamente de la Función ${funcionActualId}?`)) {
                 await generarBoletosBaseFuncion(funcionActualId); // Esto disparará la UI gracias a onSnapshot
                 document.getElementById('recent-logs').innerHTML = '<p class="text-zinc-600 italic text-center py-4">No hay ingresos registrados en esta función</p>';
                 document.getElementById('log-count').innerText = '0';
             }
-        }
+        }  */ 
     </script>
 </body>
 </html>
