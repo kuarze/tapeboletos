@@ -1,8 +1,5 @@
-Aquí tienes el **código HTML completo e integrado** con todos los arreglos aplicados (solución de sintaxis, Firebase Firestore en tiempo real, eliminación de `localStorage` y conexión directa entre el script principal y la nube).
-
-```html
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="h-full bg-zinc-950 text-zinc-100">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,322 +13,1278 @@ Aquí tienes el **código HTML completo e integrado** con todos los arreglos apl
                     colors: {
                         tape: {
                             pink: '#e63956',
-                            dark: '#121212',
-                            card: '#1e1e1e',
-                            border: '#333333'
+                            purple: '#a855f7',
+                            cyan: '#05d9e8',
+                            dark: '#0c0b10',
+                            card: '#16141d',
+                            border: '#2a2538'
                         }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Oswald', 'Impact', 'sans-serif']
                     }
                 }
             }
         }
     </script>
-    <!-- FontAwesome Font Icon -->
+    <!-- FontAwesome icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
-<body class="bg-tape-dark text-white font-sans min-h-screen pb-12">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Oswald:wght@600;700&display=swap" rel="stylesheet">
+    
+    <!-- QRCode Generator CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- HTML5-QRCode Scanner CDN -->
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 
-    <!-- NAVBAR HEADER -->
-    <header class="bg-zinc-900 border-b border-zinc-800 p-4 sticky top-0 z-50">
-        <div class="max-w-md mx-auto flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-tape-pink rounded-xl flex items-center justify-center font-black text-xl tracking-wider shadow-lg shadow-tape-pink/30">
+    <style>
+        /* Estilos de impresión estrictos para garantizar 1 SOLA PÁGINA sin páginas vacías */
+        @page {
+            size: A4 portrait;
+            margin: 0;
+        }
+
+        @media print {
+            html, body {
+                width: 100% !important;
+                height: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                background: #ffffff !important;
+                color: #000000 !important;
+                overflow: hidden !important;
+            }
+            body * {
+                visibility: hidden !important;
+            }
+            #printableArea, #printableArea * {
+                visibility: visible !important;
+            }
+            #printableArea {
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 100vw !important;
+                height: 100vh !important;
+                margin: 0 !important;
+                padding: 1.5cm !important;
+                box-sizing: border-box !important;
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: center !important;
+                align-items: center !important;
+                background: white !important;
+                color: black !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
+        
+        .tape-gradient-text {
+            background: linear-gradient(135deg, #ffffff 0%, #f472b6 50%, #e63956 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .poster-card {
+            background: radial-gradient(circle at top right, rgba(230, 57, 86, 0.18), rgba(12, 11, 16, 0.98));
+            border: 1px solid rgba(230, 57, 86, 0.35);
+        }
+
+        /* html5-qrcode video responsiveness fix */
+        #reader video {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover !important;
+            border-radius: 0.75rem;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0c0b10;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #272335;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #e63956;
+        }
+    </style>
+</head>
+<body class="h-full flex flex-col font-sans bg-zinc-950 text-zinc-100 antialiased selection:bg-tape-pink selection:text-white">
+
+    <!-- Header principal -->
+    <header class="no-print bg-zinc-900/90 backdrop-blur border-b border-tape-border sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-lg bg-tape-pink/20 border border-tape-pink/50 flex items-center justify-center text-tape-pink font-display font-bold text-xl tracking-tighter">
                     TAPE
                 </div>
                 <div>
-                    <h1 class="font-bold text-sm tracking-wide">TAPE — BOLETOS QR</h1>
+                    <h1 class="text-xl font-bold font-display tracking-wider tape-gradient-text">TAPE — BOLETOS QR</h1>
                     <p class="text-xs text-zinc-400">El77 Centro Cultural Autogestivo (45 Asientos)</p>
                 </div>
+            </div>
+
+            <!-- Menú de pestañas principales -->
+            <nav class="flex items-center gap-2 bg-zinc-950 p-1 rounded-xl border border-zinc-800">
+                <button onclick="switchTab('boletos')" id="tab-btn-boletos" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 bg-tape-pink text-white font-semibold shadow-lg shadow-tape-pink/20">
+                    <i class="fa-solid fa-ticket mr-1.5"></i> Boletos (45)
+                </button>
+                <button onclick="switchTab('escaner')" id="tab-btn-escaner" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-zinc-400 hover:text-white hover:bg-zinc-900">
+                    <i class="fa-solid fa-qrcode mr-1.5"></i> Escáner Check-In
+                </button>
+                <button onclick="switchTab('estadisticas')" id="tab-btn-estadisticas" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-zinc-400 hover:text-white hover:bg-zinc-900">
+                    <i class="fa-solid fa-chart-pie mr-1.5"></i> Resumen
+                </button>
+            </nav>
+
+            <!-- Acciones generales -->
+            <div class="flex items-center gap-2">
+                <button onclick="confirmarResetFuncionActual()" class="text-xs px-3 py-2 rounded-lg bg-red-950/40 hover:bg-red-900/60 text-red-300 border border-red-800/50 transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-rotate-right"></i> Reiniciar Función
+                </button>
             </div>
         </div>
     </header>
 
-    <main class="max-w-md mx-auto p-4 space-y-4">
-
-        <!-- NAVEGACIÓN PRINCIPAL (TABS) -->
-        <div class="grid grid-cols-3 gap-2 bg-zinc-900 p-1.5 rounded-2xl border border-zinc-800 text-center font-medium text-xs">
-            <button id="tab-btn-boletos" onclick="cambiarTab('boletos')" class="py-2.5 rounded-xl transition-all duration-200 bg-tape-pink text-white font-semibold shadow-md">
-                <i class="fa-solid fa-ticket block text-base mb-1"></i> Boletos (45)
-            </button>
-            <button id="tab-btn-scanner" onclick="cambiarTab('scanner')" class="py-2.5 rounded-xl transition-all duration-200 text-zinc-400 hover:text-white">
-                <i class="fa-solid fa-qrcode block text-base mb-1"></i> Escáner Check-In
-            </button>
-            <button id="tab-btn-resumen" onclick="cambiarTab('resumen')" class="py-2.5 rounded-xl transition-all duration-200 text-zinc-400 hover:text-white">
-                <i class="fa-solid fa-chart-pie block text-base mb-1"></i> Resumen
-            </button>
-        </div>
-
-        <!-- BARRA DE SELECCIÓN DE FUNCIÓN -->
-        <div class="bg-zinc-900/80 p-3 rounded-2xl border border-zinc-800/80 backdrop-blur-sm space-y-2">
-            <div class="flex items-center justify-between text-xs">
-                <span class="text-zinc-400 font-semibold flex items-center gap-1.5">
-                    <i class="fa-regular fa-calendar-check text-tape-pink"></i> FUNCIÓN ACTIVA:
+    <!-- Selector de Función (7 Funciones) -->
+    <div class="no-print bg-zinc-900 border-b border-zinc-800 py-2.5 px-4 sticky top-[61px] z-30 shadow-md">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div class="flex items-center gap-2 w-full sm:w-auto">
+                <span class="text-xs font-bold text-tape-pink uppercase tracking-wider whitespace-nowrap">
+                    <i class="fa-solid fa-calendar-check mr-1"></i> Función Activa:
                 </span>
-                <select id="select-funcion" onchange="cargarFuncion(parseInt(this.value))" class="bg-zinc-950 border border-zinc-700 text-white text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-tape-pink font-semibold">
-                    <option value="1">Función 1 — Viernes 09 Oct</option>
-                    <option value="2">Función 2 — Sábado 10 Oct</option>
-                    <option value="3">Función 3 — Domingo 11 Oct</option>
-                    <option value="4">Función 4 — Viernes 16 Oct</option>
-                    <option value="5">Función 5 — Sábado 17 Oct</option>
-                    <option value="6">Función 6 — Domingo 18 Oct</option>
-                    <option value="7">Función 7 — Lunes 19 Oct</option>
+                <select id="select-funcion" onchange="cambiarFuncion(this.value)" class="bg-zinc-950 border border-tape-pink/50 rounded-lg px-3 py-1.5 text-xs font-semibold text-white focus:outline-none focus:border-tape-pink w-full sm:w-auto">
+                    <option value="1">Función 1 — Viernes 09 de Octubre 2026 (20:30h)</option>
+                    <option value="2">Función 2 — Viernes 16 de Octubre 2026 (20:30h)</option>
+                    <option value="3">Función 3 — Viernes 23 de Octubre 2026 (20:30h)</option>
+                    <option value="4">Función 4 — Viernes 30 de Octubre 2026 (20:30h)</option>
+                    <option value="5">Función 5 — Viernes 06 de Noviembre 2026 (20:30h)</option>
+                    <option value="6">Función 6 — Viernes 13 de Noviembre 2026 (20:30h)</option>
+                    <option value="7">Función 7 — Viernes 20 de Noviembre 2026 (20:30h)</option>
                 </select>
             </div>
-            <div id="info-funcion-activa" class="text-xs text-zinc-300 bg-zinc-950/60 p-2 rounded-xl border border-zinc-800/50 flex items-center justify-between">
-                <span><i class="fa-regular fa-clock text-tape-pink mr-1"></i> <span id="lbl-fecha-activa">Viernes 09 de Octubre 2026 (20:30 hrs)</span></span>
+
+            <div id="badge-fecha-activa" class="text-xs font-mono text-zinc-300 bg-zinc-950 px-3 py-1 rounded-md border border-zinc-800">
+                <i class="fa-solid fa-clock text-tape-pink mr-1"></i> <span id="lbl-fecha-activa">09 Octubre 2026 - 20:30 hrs</span>
             </div>
         </div>
+    </div>
 
-        <!-- ==========================================================================
-             SECCIÓN 1: BOLETOS Y MATRIZ DE ASIENTOS
-             ========================================================================== -->
-        <section id="sec-boletos" class="space-y-4">
-            <!-- Métricas Rápida de la Función Activa -->
-            <div class="grid grid-cols-3 gap-2 text-center text-xs">
-                <div class="bg-zinc-900 p-2.5 rounded-xl border border-zinc-800">
-                    <p class="text-zinc-400">Vendidos</p>
-                    <p id="stat-vendidos" class="text-lg font-bold text-tape-pink">0 / 45</p>
+    <!-- Contenido Principal -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- Banner de la Obra "TAPE" -->
+        <section class="no-print poster-card rounded-2xl p-4 sm:p-6 mb-6 flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden">
+            <div class="flex flex-col sm:flex-row items-center gap-5 z-10">
+                <!-- SVG Ilustrado representando la escenografía isométrica / Cubo del Cartel Oficial de TAPE -->
+                <div class="w-28 h-36 sm:w-32 sm:h-40 rounded-xl overflow-hidden border border-tape-pink/50 shadow-2xl flex-shrink-0 bg-zinc-950 p-1">
+                    <svg viewBox="0 0 300 400" class="w-full h-full object-cover rounded-lg">
+                        <rect width="100%" height="100%" fill="#0a090e"/>
+                        <!-- Estructura del cubo isométrico del cartel -->
+                        <path d="M 150 40 L 270 110 L 270 290 L 150 360 L 30 290 L 30 110 Z" stroke="#e63956" stroke-width="2" fill="none" opacity="0.6"/>
+                        <path d="M 150 40 L 150 360" stroke="#a855f7" stroke-width="1.5" stroke-dasharray="4,4" opacity="0.5"/>
+                        <path d="M 30 110 L 150 180 L 270 110" stroke="#05d9e8" stroke-width="1.5" opacity="0.5"/>
+                        <!-- Elementos en flotación dentro del cubo -->
+                        <rect x="70" y="140" width="40" height="30" fill="#e63956" opacity="0.8" rx="2" transform="rotate(-12 90 155)"/>
+                        <circle cx="210" cy="180" r="18" fill="none" stroke="#ec4899" stroke-width="2"/>
+                        <polygon points="120,240 160,220 180,260 140,280" fill="#a855f7" opacity="0.7"/>
+                        <!-- Tipografía oficial -->
+                        <text x="150" y="325" font-family="Oswald, sans-serif" font-size="58" font-weight="bold" fill="#ffffff" text-anchor="middle" letter-spacing="2">TAPE</text>
+                        <text x="150" y="348" font-family="sans-serif" font-size="11" font-weight="bold" fill="#e63956" text-anchor="middle">EL77 CENTRO CULTURAL</text>
+                    </svg>
                 </div>
-                <div class="bg-zinc-900 p-2.5 rounded-xl border border-zinc-800">
-                    <p class="text-zinc-400">Asistencia</p>
-                    <p id="stat-asistencia" class="text-lg font-bold text-emerald-400">0</p>
-                </div>
-                <div class="bg-zinc-900 p-2.5 rounded-xl border border-zinc-800">
-                    <p class="text-zinc-400">Recaudado</p>
-                    <p id="stat-recaudado" class="text-lg font-bold text-white">$0 MXN</p>
+
+                <div class="space-y-1.5 text-center sm:text-left">
+                    <div class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-tape-pink/20 border border-tape-pink/40 text-tape-pink text-[11px] font-semibold uppercase tracking-wider">
+                        <i class="fa-solid fa-masks-theater text-xs"></i> Temporada 2026 (7 Funciones)
+                    </div>
+                    <h2 class="text-3xl font-extrabold font-display tracking-tight text-white">TAPE</h2>
+                    <p class="text-xs text-zinc-300 font-medium">De: <span class="text-white">Stephen Belber</span> | Dirección: <span class="text-white">Andrés Córdova</span></p>
+                    <p class="text-xs text-zinc-400"><strong>Elenco:</strong> Rodrigo Ríaz, José Daniel Rosales, Iván Cuevas, Daniela Plaza, Estefanía Rios</p>
+                    <div class="flex flex-wrap justify-center sm:justify-start gap-3 pt-1 text-xs text-zinc-300 font-mono">
+                        <span><i class="fa-solid fa-location-dot text-tape-pink mr-1"></i> El77 Centro Cultural Autogestivo (Abraham González #77, Col Juárez)</span>
+                        <span><i class="fa-solid fa-ticket text-tape-pink mr-1"></i> $350 MXN / Boleto</span>
+                    </div>
                 </div>
             </div>
 
-            <!-- Matriz de 45 Boletos -->
-            <div class="bg-zinc-900 p-3.5 rounded-2xl border border-zinc-800 space-y-3">
-                <div class="flex items-center justify-between text-xs text-zinc-400 pb-2 border-b border-zinc-800">
-                    <span>Mapa de Asientos (1-45)</span>
-                    <div class="flex items-center gap-3">
-                        <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-zinc-800 border border-zinc-600 inline-block"></span> Disp.</span>
-                        <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-tape-pink inline-block"></span> Vend.</span>
-                        <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span> Check-In</span>
+            <div class="z-10 flex flex-col items-end justify-center border-t md:border-t-0 md:border-l border-zinc-800 pt-4 md:pt-0 md:pl-6 w-full md:w-auto text-center md:text-right">
+                <span class="text-xs text-zinc-400 uppercase tracking-wider font-semibold">Productora</span>
+                <span class="text-sm font-bold text-tape-pink">TEMPESTADES PRODUCTORA</span>
+                <span class="text-[10px] text-zinc-500">Con apoyo de MEISNER MÉXICO</span>
+            </div>
+        </section>
+
+        <!-- Métricas Rápidas Dashboard de la Función Seleccionada -->
+        <section class="no-print grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+            <div class="bg-zinc-900 border border-zinc-800 p-4 rounded-xl flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-medium text-zinc-400 uppercase tracking-wider">Aforo Función</p>
+                    <p class="text-2xl font-bold text-zinc-100" id="stat-total">45</p>
+                </div>
+                <div class="w-10 h-10 rounded-lg bg-zinc-800 flex items-center justify-center text-zinc-400">
+                    <i class="fa-solid fa-chair text-lg"></i>
+                </div>
+            </div>
+
+            <div class="bg-zinc-900 border border-pink-900/40 p-4 rounded-xl flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-medium text-tape-pink uppercase tracking-wider">Vendidos</p>
+                    <p class="text-2xl font-bold text-tape-pink" id="stat-vendidos">0</p>
+                </div>
+                <div class="w-10 h-10 rounded-lg bg-pink-950/60 border border-pink-800/40 flex items-center justify-center text-tape-pink">
+                    <i class="fa-solid fa-ticket text-lg"></i>
+                </div>
+            </div>
+
+            <div class="bg-zinc-900 border border-emerald-900/40 p-4 rounded-xl flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-medium text-emerald-400 uppercase tracking-wider">Asistieron</p>
+                    <p class="text-2xl font-bold text-emerald-400" id="stat-asistidos">0</p>
+                </div>
+                <div class="w-10 h-10 rounded-lg bg-emerald-950/60 border border-emerald-800/40 flex items-center justify-center text-emerald-400">
+                    <i class="fa-solid fa-user-check text-lg"></i>
+                </div>
+            </div>
+
+            <div class="bg-zinc-900 border border-zinc-800 p-4 rounded-xl flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-medium text-zinc-400 uppercase tracking-wider">Recaudación</p>
+                    <p class="text-2xl font-bold text-white" id="stat-recaudacion">$0</p>
+                </div>
+                <div class="w-10 h-10 rounded-lg bg-zinc-800 flex items-center justify-center text-tape-pink">
+                    <i class="fa-solid fa-sack-dollar text-lg"></i>
+                </div>
+            </div>
+        </section>
+
+        <!-- PESTAÑA 1: GESTIÓN Y VISTA DE BOLETOS -->
+        <section id="tab-boletos" class="tab-content block space-y-6">
+            <!-- Barra de Filtros y Búsqueda -->
+            <div class="bg-zinc-900 p-4 rounded-xl border border-zinc-800 flex flex-col md:flex-row gap-4 items-center justify-between">
+                <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
+                    <span class="text-xs font-semibold text-zinc-400 mr-2">Filtrar:</span>
+                    <button onclick="filtrarBoletos('todos')" id="filter-todos" class="filter-btn text-xs px-3 py-1.5 rounded-lg bg-tape-pink text-white font-bold">Todos (45)</button>
+                    <button onclick="filtrarBoletos('disponibles')" id="filter-disponibles" class="filter-btn text-xs px-3 py-1.5 rounded-lg bg-zinc-800 text-zinc-300 hover:bg-zinc-700">Disponibles</button>
+                    <button onclick="filtrarBoletos('vendidos')" id="filter-vendidos" class="filter-btn text-xs px-3 py-1.5 rounded-lg bg-zinc-800 text-zinc-300 hover:bg-zinc-700">Vendidos</button>
+                    <button onclick="filtrarBoletos('asistidos')" id="filter-asistidos" class="filter-btn text-xs px-3 py-1.5 rounded-lg bg-zinc-800 text-zinc-300 hover:bg-zinc-700">Asistieron</button>
+                </div>
+
+                <div class="flex items-center gap-3 w-full md:w-auto justify-end">
+                    <div class="relative w-full sm:w-64">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 text-xs"></i>
+                        <input type="text" id="input-busqueda" oninput="buscarBoletos()" placeholder="Buscar boleto o titular..." class="w-full bg-zinc-950 border border-zinc-800 rounded-lg pl-8 pr-3 py-1.5 text-xs text-zinc-200 focus:outline-none focus:border-tape-pink">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Grilla de 45 Boletos Serializados TAPE-F{N}-01 a TAPE-F{N}-45 -->
+            <div id="grid-boletos" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <!-- Se llena dinámicamente con JS -->
+            </div>
+        </section>
+
+        <!-- PESTAÑA 2: ESCÁNER Y CONTROL DE ASISTENCIA -->
+        <section id="tab-escaner" class="tab-content hidden space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Columna Izquierda: Escáner de Cámara, Archivo y Manual -->
+                <div class="lg:col-span-7 space-y-6">
+                    <div class="bg-zinc-900 p-5 rounded-2xl border border-zinc-800 shadow-xl">
+                        <div class="flex items-center justify-between mb-4">
+                            <h2 class="text-lg font-bold font-display tracking-wide text-tape-pink flex items-center gap-2">
+                                <i class="fa-solid fa-camera"></i> Escáner QR Check-In
+                            </h2>
+                            <span class="text-xs px-2.5 py-1 rounded-full bg-zinc-800 text-tape-cyan font-mono border border-zinc-700">Función <span id="scan-lbl-funcion">1</span></span>
+                        </div>
+
+                        <!-- Visor de la cámara -->
+                        <div class="relative bg-zinc-950 rounded-xl overflow-hidden border border-zinc-800 min-h-[300px] flex flex-col items-center justify-center p-3">
+                            <div id="reader" class="w-full max-w-md overflow-hidden rounded-lg min-h-[250px]"></div>
+                            
+                            <div id="scanner-placeholder" class="text-center p-6 space-y-4">
+                                <i class="fa-solid fa-qrcode text-5xl text-zinc-700 animate-pulse"></i>
+                                <p class="text-sm text-zinc-400">Escanea el boleto QR en puerta para dar acceso</p>
+                                
+                                <div class="flex flex-wrap justify-center gap-3">
+                                    <button onclick="iniciarEscanerCamara()" id="btn-start-scanner" class="px-5 py-2.5 rounded-xl bg-tape-pink hover:bg-pink-600 text-white font-bold text-sm transition shadow-lg inline-flex items-center gap-2">
+                                        <i class="fa-solid fa-video"></i> Activar Cámara
+                                    </button>
+
+                                    <!-- Captura de Foto Nativa 100% compatible con móviles incluso en file:// o http:// sin SSL -->
+                                    <label class="px-5 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold text-sm transition border border-zinc-700 cursor-pointer inline-flex items-center gap-2 shadow-lg">
+                                        <i class="fa-solid fa-camera-retro text-tape-cyan"></i> Tomar Foto o Subir QR
+                                        <input type="file" id="qr-input-file" accept="image/*" capture="environment" class="hidden" onchange="escanearArchivoImagen(event)">
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <button onclick="detenerEscaner()" id="btn-stop-scanner" class="hidden absolute top-3 right-3 px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-semibold z-10 shadow-lg">
+                                <i class="fa-solid fa-stop mr-1"></i> Apagar Cámara
+                            </button>
+                        </div>
+
+                        <!-- Panel de Diagnóstico e Información de Permisos HTTPS / file:// -->
+                        <div id="scanner-diagnostic-msg" class="hidden mt-3 p-3.5 rounded-xl bg-amber-950/40 border border-amber-700/60 text-amber-200 text-xs space-y-2">
+                            <div class="flex items-start gap-2 font-semibold">
+                                <i class="fa-solid fa-triangle-exclamation text-amber-400 mt-0.5 text-sm"></i>
+                                <span id="diag-title">Aviso sobre permisos de cámara</span>
+                            </div>
+                            <p id="diag-desc" class="text-[11px] leading-relaxed text-amber-300/90"></p>
+                            <div class="pt-1 text-[11px] font-medium text-white">
+                                <i class="fa-solid fa-circle-check text-emerald-400 mr-1"></i> <strong>Solución Inmediata:</strong> Utiliza el botón <u>"Tomar Foto o Subir QR"</u> arriba, o escribe el número de boleto abajo.
+                            </div>
+                        </div>
+
+                        <!-- Separador -->
+                        <div class="relative my-6 text-center">
+                            <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-zinc-800"></div></div>
+                            <span class="relative bg-zinc-900 px-3 text-xs text-zinc-500 font-medium uppercase">O ingresar número manualmente</span>
+                        </div>
+
+                        <!-- Formulario de Ingreso Manual -->
+                        <form onsubmit="procesarIngresoManual(event)" class="flex gap-2">
+                            <input type="text" id="input-codigo-manual" placeholder="Ejemplo: 05 o TAPE-F1-05" class="flex-1 bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2.5 text-sm uppercase text-tape-pink font-mono focus:outline-none focus:border-tape-pink">
+                            <button type="submit" class="px-5 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded-xl font-medium text-sm border border-zinc-700 transition flex items-center gap-2 whitespace-nowrap">
+                                <i class="fa-solid fa-arrow-right-to-bracket text-tape-pink"></i> Validar
+                            </button>
+                        </form>
                     </div>
                 </div>
 
-                <div id="grid-boletos" class="grid grid-cols-5 gap-2">
-                    <!-- Se genera dinámicamente con JS -->
+                <!-- Columna Derecha: Resultado del Escaneo -->
+                <div class="lg:col-span-5 space-y-6">
+                    <!-- Tarjeta de Feedback Visually Clear (Verde/Rojo/Amarillo) -->
+                    <div id="scan-result-card" class="bg-zinc-900 p-6 rounded-2xl border border-zinc-800 text-center flex flex-col items-center justify-center min-h-[320px] transition-all duration-300">
+                        <div id="scan-icon-container" class="w-20 h-20 rounded-full bg-zinc-800 flex items-center justify-center mb-4 text-zinc-600 text-3xl">
+                            <i class="fa-solid fa-qrcode"></i>
+                        </div>
+                        <h3 id="scan-title" class="text-xl font-bold text-zinc-300 mb-1">Esperando Escaneo...</h3>
+                        <p id="scan-subtitle" class="text-sm text-zinc-500 max-w-xs mb-4">Escanea o suba la foto del boleto para verificar acceso en la puerta.</p>
+
+                        <!-- Datos del boleto escaneado -->
+                        <div id="scan-details" class="hidden w-full bg-zinc-950/80 p-4 rounded-xl border border-zinc-800 text-left space-y-2 text-xs">
+                            <div class="flex justify-between border-b border-zinc-800 pb-1.5">
+                                <span class="text-zinc-400">Boleto Folio:</span>
+                                <span id="detail-id" class="font-bold text-tape-pink font-mono text-sm">-</span>
+                            </div>
+                            <div class="flex justify-between border-b border-zinc-800 pb-1.5">
+                                <span class="text-zinc-400">Titular:</span>
+                                <span id="detail-cliente" class="font-medium text-zinc-200">-</span>
+                            </div>
+                            <div class="flex justify-between border-b border-zinc-800 pb-1.5">
+                                <span class="text-zinc-400">Función:</span>
+                                <span id="detail-funcion-num" class="font-medium text-tape-cyan">-</span>
+                            </div>
+                            <div class="flex justify-between border-b border-zinc-800 pb-1.5">
+                                <span class="text-zinc-400">Estado Previo:</span>
+                                <span id="detail-estado-previo" class="font-medium">-</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-zinc-400">Hora Entrada:</span>
+                                <span id="detail-hora" class="font-medium text-emerald-400 font-mono">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bitácora Reciente de Ingresos -->
+                    <div class="bg-zinc-900 p-4 rounded-xl border border-zinc-800">
+                        <h4 class="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-3 flex items-center justify-between">
+                            <span><i class="fa-solid fa-clock-rotate-left mr-1"></i> Accesos Concedidos</span>
+                            <span id="log-count" class="text-tape-pink text-xs font-mono">0</span>
+                        </h4>
+                        <div id="recent-logs" class="space-y-2 max-h-48 overflow-y-auto pr-1 text-xs">
+                            <p class="text-zinc-600 italic text-center py-4">No hay ingresos registrados en esta función</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <!-- ==========================================================================
-             SECCIÓN 2: ESCÁNER / CHECK-IN MANUAL
-             ========================================================================== -->
-        <section id="sec-scanner" class="hidden space-y-4">
-            <div class="bg-zinc-900 p-4 rounded-2xl border border-zinc-800 space-y-3 text-center">
-                <h2 class="text-sm font-bold text-zinc-200">Escanear Boleto / Registro Manual</h2>
-                <p class="text-xs text-zinc-400">Escanea el código QR del boleto o ingresa el número de asiento manualmente.</p>
-                
-                <div class="space-y-2 pt-2">
-                    <input type="number" id="input-asiento-manual" placeholder="Número de Asiento (1 - 45)" min="1" max="45" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2 text-center text-sm focus:outline-none focus:border-tape-pink text-white">
-                    <button onclick="procesarAsientoManual()" class="w-full bg-tape-pink hover:bg-rose-600 text-white text-xs font-semibold py-2.5 rounded-xl transition-all">
-                        <i class="fa-solid fa-check mr-1"></i> Registrar / Cambiar Estado
-                    </button>
+        <!-- PESTAÑA 3: ESTADÍSTICAS Y CONFIGURACIÓN -->
+        <section id="tab-estadisticas" class="tab-content hidden space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Avance de Ocupación -->
+                <div class="bg-zinc-900 p-6 rounded-2xl border border-zinc-800 space-y-6">
+                    <h3 class="text-lg font-bold font-display tracking-wide text-tape-pink flex items-center gap-2">
+                        <i class="fa-solid fa-chart-line"></i> Progreso de Función <span id="summary-num-func">1</span>
+                    </h3>
+
+                    <!-- Progreso de Ventas -->
+                    <div>
+                        <div class="flex justify-between text-sm mb-2">
+                            <span class="text-zinc-300 font-medium">Boletos Vendidos</span>
+                            <span id="pct-vendidos-text" class="text-tape-pink font-bold">0%</span>
+                        </div>
+                        <div class="w-full bg-zinc-950 rounded-full h-3 border border-zinc-800 overflow-hidden">
+                            <div id="bar-vendidos" class="bg-gradient-to-r from-pink-700 to-tape-pink h-full w-0 transition-all duration-500"></div>
+                        </div>
+                    </div>
+
+                    <!-- Progreso de Asistencia -->
+                    <div>
+                        <div class="flex justify-between text-sm mb-2">
+                            <span class="text-zinc-300 font-medium">Asistencia Efectiva (Check-in)</span>
+                            <span id="pct-asistidos-text" class="text-emerald-400 font-bold">0%</span>
+                        </div>
+                        <div class="w-full bg-zinc-950 rounded-full h-3 border border-zinc-800 overflow-hidden">
+                            <div id="bar-asistidos" class="bg-gradient-to-r from-emerald-600 to-teal-400 h-full w-0 transition-all duration-500"></div>
+                        </div>
+                    </div>
+
+                    <div class="p-4 bg-zinc-950 rounded-xl border border-zinc-800 text-xs text-zinc-400 space-y-2">
+                        <p class="flex justify-between">
+                            <span>Asientos Disponibles:</span>
+                            <strong id="summary-disponibles" class="text-zinc-200">45</strong>
+                        </p>
+                        <p class="flex justify-between">
+                            <span>Boletos Vendidos (Por ingresar):</span>
+                            <strong id="summary-pendientes" class="text-tape-pink">0</strong>
+                        </p>
+                        <p class="flex justify-between">
+                            <span>Ingresaron a Sala:</span>
+                            <strong id="summary-ingresados" class="text-emerald-400">0</strong>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Resumen Global de la Temporada -->
+                <div class="bg-zinc-900 p-6 rounded-2xl border border-zinc-800 space-y-4">
+                    <h3 class="text-lg font-bold font-display tracking-wide text-tape-pink flex items-center gap-2">
+                        <i class="fa-solid fa-list-check"></i> Resumen de las 7 Funciones
+                    </h3>
+
+                    <div id="resumen-todas-funciones" class="space-y-2 text-xs max-h-[260px] overflow-y-auto pr-1">
+                        <!-- Generado dinámicamente con JS -->
+                    </div>
+
+                    <div class="p-4 bg-tape-pink/10 border border-tape-pink/30 rounded-xl">
+                        <p class="text-xs text-zinc-300 mb-1 font-medium">Recaudación Total Potencial (315 Asientos Totales):</p>
+                        <p id="recaudacion-total-temporada" class="text-2xl font-bold font-display text-tape-pink">$78,750 MXN</p>
+                    </div>
                 </div>
             </div>
-
-            <!-- Panel de Notificaciones/Mensajes del Escáner -->
-            <div id="scan-resultado" class="hidden bg-zinc-900 p-4 rounded-2xl border border-zinc-800 text-center space-y-2">
-                <!-- Se llena dinámicamente -->
-            </div>
         </section>
-
-        <!-- ==========================================================================
-             SECCIÓN 3: RESUMEN Y ESTADÍSTICAS GLOBALES
-             ========================================================================== -->
-        <section id="sec-resumen" class="hidden space-y-4">
-            <div class="bg-zinc-900 p-4 rounded-2xl border border-zinc-800 space-y-3">
-                <h2 class="text-sm font-bold text-zinc-200 flex items-center justify-between">
-                    <span>Resumen Global de Temporada</span>
-                    <span class="text-xs font-normal text-zinc-400">7 Funciones</span>
-                </h2>
-
-                <div id="resumen-todas-funciones" class="space-y-2">
-                    <!-- Se llena dinámicamente con Firebase -->
-                </div>
-            </div>
-        </section>
-
     </main>
 
-    <!-- MODAL DE DETALLE DEL BOLETO -->
-    <div id="modal-boleto" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 w-full max-w-xs space-y-4 relative text-center">
-            <button onclick="cerrarModalBoleto()" class="absolute top-3 right-3 text-zinc-500 hover:text-white p-1">
-                <i class="fa-solid fa-xmark text-lg"></i>
-            </button>
-            <h3 class="text-base font-bold text-zinc-100">Asiento #<span id="modal-num-asiento">1</span></h3>
-            
-            <div class="space-y-2">
-                <label class="block text-xs text-zinc-400 text-left">Estado del Boleto:</label>
-                <select id="modal-select-estado" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-2 text-xs text-white focus:outline-none focus:border-tape-pink">
-                    <option value="disponible">Disponible</option>
-                    <option value="vendido">Vendido</option>
-                    <option value="asistido">Asistido (Check-In)</option>
-                </select>
+    <!-- MODAL 1: REGISTRAR VENTA / NOMBRE COMPRADOR -->
+    <div id="modal-venta" class="fixed inset-0 bg-zinc-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+            <div class="flex justify-between items-center border-b border-zinc-800 pb-3">
+                <h3 class="text-lg font-bold font-display text-tape-pink" id="modal-venta-title">Registrar Venta</h3>
+                <button onclick="cerrarModalVenta()" class="text-zinc-500 hover:text-zinc-300 text-lg"><i class="fa-solid fa-xmark"></i></button>
             </div>
 
-            <div class="pt-2 flex gap-2">
-                <button onclick="guardarCambioModal()" class="w-full bg-tape-pink text-white text-xs font-semibold py-2 rounded-xl">
-                    Guardar
+            <input type="hidden" id="modal-venta-ticket-id">
+
+            <div>
+                <label class="block text-xs font-medium text-zinc-400 mb-1">Nombre del Comprador / Titular (Opcional):</label>
+                <input type="text" id="modal-venta-cliente" placeholder="Ej. Mariana Ruiz" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-sm text-zinc-100 focus:outline-none focus:border-tape-pink">
+            </div>
+
+            <div class="flex justify-end gap-2 pt-2">
+                <button onclick="cerrarModalVenta()" class="px-4 py-2 rounded-xl bg-zinc-800 text-zinc-300 text-xs font-medium hover:bg-zinc-700">Cancelar</button>
+                <button onclick="confirmarVentaModal()" class="px-4 py-2 rounded-xl bg-tape-pink hover:bg-pink-600 text-white font-bold text-xs shadow-lg shadow-tape-pink/30">Confirmar Venta</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: VISTA AMPLIADA DEL BOLETO CON CARTEL -->
+    <div id="modal-detalle" class="fixed inset-0 bg-zinc-950/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-zinc-900 border border-tape-pink/40 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-5 text-center relative my-8">
+            <button onclick="cerrarModalDetalle()" class="absolute top-4 right-4 text-zinc-500 hover:text-zinc-300 text-lg z-10"><i class="fa-solid fa-xmark"></i></button>
+
+            <!-- Previsualización Estilo Ticket de Teatro TAPE con Cartel Incorporado -->
+            <div id="single-ticket-preview" class="poster-card p-5 rounded-xl text-left space-y-4 relative overflow-hidden">
+                <div class="flex items-center gap-3 border-b border-zinc-800 pb-3">
+                    <!-- SVG Cartel del Cubo de TAPE -->
+                    <div class="w-14 h-20 rounded border border-tape-pink/50 bg-zinc-950 flex-shrink-0 p-0.5 overflow-hidden">
+                        <svg viewBox="0 0 300 400" class="w-full h-full object-cover">
+                            <rect width="100%" height="100%" fill="#0a090e"/>
+                            <path d="M 150 40 L 270 110 L 270 290 L 150 360 L 30 290 L 30 110 Z" stroke="#e63956" stroke-width="3" fill="none"/>
+                            <path d="M 150 40 L 150 360" stroke="#a855f7" stroke-width="2"/>
+                            <path d="M 30 110 L 150 180 L 270 110" stroke="#05d9e8" stroke-width="2"/>
+                            <text x="150" y="325" font-family="Oswald, sans-serif" font-size="65" font-weight="bold" fill="#ffffff" text-anchor="middle">TAPE</text>
+                        </svg>
+                    </div>
+                    <div class="flex-1">
+                        <span class="text-[10px] tracking-widest text-tape-pink uppercase font-semibold block">El77 Centro Cultural Autogestivo</span>
+                        <h4 class="text-2xl font-bold font-display tracking-tight text-white">TAPE</h4>
+                        <p class="text-[10px] text-zinc-400">De Stephen Belber | Dir. Andrés Córdova</p>
+                    </div>
+                    <span id="preview-badge-estado" class="text-[10px] font-bold px-2 py-0.5 rounded bg-tape-pink text-white">VENDIDO</span>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                    <div>
+                        <p class="text-zinc-500 text-[10px]">Folio Boleto:</p>
+                        <p id="preview-ticket-id" class="font-mono font-bold text-tape-pink text-base">TAPE-F1-01</p>
+                    </div>
+                    <div>
+                        <p class="text-zinc-500 text-[10px]">Precio:</p>
+                        <p id="preview-precio" class="font-bold text-zinc-200">$350 MXN</p>
+                    </div>
+                    <div>
+                        <p class="text-zinc-500 text-[10px]">Titular:</p>
+                        <p id="preview-cliente" class="font-medium text-zinc-200 truncate">General</p>
+                    </div>
+                    <div>
+                        <p class="text-zinc-500 text-[10px]">Función / Horario:</p>
+                        <p id="preview-horario" class="font-medium text-tape-cyan text-[11px]">Viernes 09 Oct - 20:30h</p>
+                    </div>
+                </div>
+
+                <!-- QR grande -->
+                <div class="flex flex-col items-center justify-center pt-2 border-t border-zinc-800">
+                    <div id="single-qr-container" class="bg-white p-3 rounded-xl shadow-inner flex justify-center"></div>
+                    <p class="text-[10px] text-zinc-400 mt-2 font-mono" id="preview-qr-code-str">TAPE-F1-01</p>
+                </div>
+            </div>
+
+            <div class="flex justify-center gap-3">
+                <button onclick="imprimirBoletoUnicoPDF()" class="px-5 py-2.5 bg-tape-pink hover:bg-pink-600 text-white font-bold rounded-xl text-xs shadow-lg flex items-center gap-2">
+                    <i class="fa-solid fa-file-pdf"></i> Imprimir Boleto (1 Página PDF)
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- ==========================================================================
-         LÓGICA DE LA APLICACIÓN (SCRIPT PRINCIPAL)
-         ========================================================================== -->
+    <!-- Área Exclusiva de Impresión de 1 SOLA PÁGINA -->
+    <div id="printableArea" class="hidden"></div>
+
     <script>
+        /* ==========================================================================
+           1. FECHAS DE LAS 7 FUNCIONES DE TAPE
+           ========================================================================== */
+        const CANTIDAD_ASIENTOS = 45;
         const PRECIO_BOLETO = 350;
-        const TOTAL_ASIENTOS = 45;
+        const STORAGE_KEY_PREFIX = 'tape_boletos_func_v3_';
+
         const FUNCIONES = [
-            { id: 1, fechaStr: "Viernes 09 de Octubre 2026", hora: "20:30 hrs", label: "Vie 09 Oct" },
-            { id: 2, fechaStr: "Sábado 10 de Octubre 2026", hora: "19:00 hrs", label: "Sáb 10 Oct" },
-            { id: 3, fechaStr: "Domingo 11 de Octubre 2026", hora: "18:00 hrs", label: "Dom 11 Oct" },
-            { id: 4, fechaStr: "Viernes 16 de Octubre 2026", hora: "20:30 hrs", label: "Vie 16 Oct" },
-            { id: 5, fechaStr: "Sábado 17 de Octubre 2026", hora: "19:00 hrs", label: "Sáb 17 Oct" },
-            { id: 6, fechaStr: "Domingo 18 de Octubre 2026", hora: "18:00 hrs", label: "Dom 18 Oct" },
-            { id: 7, fechaStr: "Lunes 19 de Octubre 2026", hora: "20:30 hrs", label: "Lun 19 Oct" }
+            { id: 1, fechaStr: "Viernes 09 de Octubre 2026", hora: "20:30 hrs", label: "09 Oct 2026 - 20:30h" },
+            { id: 2, fechaStr: "Viernes 16 de Octubre 2026", hora: "20:30 hrs", label: "16 Oct 2026 - 20:30h" },
+            { id: 3, fechaStr: "Viernes 23 de Octubre 2026", hora: "20:30 hrs", label: "23 Oct 2026 - 20:30h" },
+            { id: 4, fechaStr: "Viernes 30 de Octubre 2026", hora: "20:30 hrs", label: "30 Oct 2026 - 20:30h" },
+            { id: 5, fechaStr: "Viernes 06 de Noviembre 2026", hora: "20:30 hrs", label: "06 Nov 2026 - 20:30h" },
+            { id: 6, fechaStr: "Viernes 13 de Noviembre 2026", hora: "20:30 hrs", label: "13 Nov 2026 - 20:30h" },
+            { id: 7, fechaStr: "Viernes 20 de Noviembre 2026", hora: "20:30 hrs", label: "20 Nov 2026 - 20:30h" }
         ];
 
         let funcionActualId = 1;
         let boletosFuncion = [];
-        let asientoSeleccionadoModal = null;
+        let html5QrCode = null;
+        let filtroActual = 'todos';
+        let boletoSeleccionadoId = null;
+
+        /* ==========================================================================
+           2. INICIALIZACIÓN
+           ========================================================================== */
+        window.onload = function() {
+            cargarFuncion(1);
+            verificarDiagnosticoCamara();
+        };
+
+        function cambiarFuncion(id) {
+            funcionActualId = parseInt(id);
+            cargarFuncion(funcionActualId);
+        }
+
+    function cargarFuncion(idFunc) {
+    funcionActualId = idFunc;
+    
+    // Actualizar etiquetas visuales de la función activa
+    const infoFunc = FUNCIONES.find(f => f.id === idFunc);
+    if (infoFunc) {
+        document.getElementById('lbl-fecha-activa').innerText = `${infoFunc.fechaStr} (${infoFunc.hora})`;
+        document.getElementById('scan-lbl-funcion').innerText = `${idFunc} (${infoFunc.label})`;
+        document.getElementById('summary-num-func').innerText = idFunc;
+    }
+
+    // Iniciar la escucha en tiempo real desde Firebase para la función seleccionada
+    if (typeof window.escucharBoletosEnTiempoReal === 'function') {
+        window.escucharBoletosEnTiempoReal(idFunc);
+    }
+}
 
         function generarBoletosBaseFuncion(idFunc) {
             boletosFuncion = [];
-            for (let i = 1; i <= TOTAL_ASIENTOS; i++) {
+            for (let i = 1; i <= CANTIDAD_ASIENTOS; i++) {
+                const numPadded = String(i).padStart(2, '0');
+                const folio = `TAPE-F${idFunc}-${numPadded}`;
                 boletosFuncion.push({
-                    id: i,
-                    estado: 'disponible'
+                    id: folio,
+                    numero: i,
+                    funcionId: idFunc,
+                    estado: 'disponible', // 'disponible', 'vendido', 'asistido'
+                    cliente: '',
+                    horaCheckIn: null
                 });
             }
+            guardarEnStorage();
         }
 
-        function cambiarTab(tab) {
-            document.getElementById('sec-boletos').classList.add('hidden');
-            document.getElementById('sec-scanner').classList.add('hidden');
-            document.getElementById('sec-resumen').classList.add('hidden');
+        function guardarEnStorage() {
+    if (typeof window.guardarBoletosEnNube === 'function') {
+        window.guardarBoletosEnNube();
+    }
+}
 
-            document.getElementById('tab-btn-boletos').className = 'py-2.5 rounded-xl transition-all duration-200 text-zinc-400 hover:text-white';
-            document.getElementById('tab-btn-scanner').className = 'py-2.5 rounded-xl transition-all duration-200 text-zinc-400 hover:text-white';
-            document.getElementById('tab-btn-resumen').className = 'py-2.5 rounded-xl transition-all duration-200 text-zinc-400 hover:text-white';
-
-            if (tab === 'boletos') {
-                document.getElementById('sec-boletos').classList.remove('hidden');
-                document.getElementById('tab-btn-boletos').className = 'py-2.5 rounded-xl transition-all duration-200 bg-tape-pink text-white font-semibold shadow-md';
-            } else if (tab === 'scanner') {
-                document.getElementById('sec-scanner').classList.remove('hidden');
-                document.getElementById('tab-btn-scanner').className = 'py-2.5 rounded-xl transition-all duration-200 bg-tape-pink text-white font-semibold shadow-md';
-            } else if (tab === 'resumen') {
-                document.getElementById('sec-resumen').classList.remove('hidden');
-                document.getElementById('tab-btn-resumen').className = 'py-2.5 rounded-xl transition-all duration-200 bg-tape-pink text-white font-semibold shadow-md';
-            }
-        }
-
+        /* ==========================================================================
+           3. RENDERIZADO DE LOS BOLETOS (TAPE-F{N}-01 A 45)
+           ========================================================================== */
         function renderizarBoletos() {
-            const grid = document.getElementById('grid-boletos');
-            grid.innerHTML = '';
+            const container = document.getElementById('grid-boletos');
+            container.innerHTML = '';
 
-            boletosFuncion.forEach(b => {
-                const btn = document.createElement('button');
-                let colorClass = 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-600';
-                
-                if (b.estado === 'vendido') {
-                    colorClass = 'bg-tape-pink border-tape-pink text-white font-bold shadow-sm shadow-tape-pink/20';
-                } else if (b.estado === 'asistido') {
-                    colorClass = 'bg-emerald-500 border-emerald-500 text-white font-bold shadow-sm shadow-emerald-500/20';
+            const busqueda = (document.getElementById('input-busqueda').value || '').toLowerCase();
+
+            const boletosFiltrados = boletosFuncion.filter(b => {
+                if (filtroActual === 'disponibles' && b.estado !== 'disponible') return false;
+                if (filtroActual === 'vendidos' && b.estado !== 'vendido') return false;
+                if (filtroActual === 'asistidos' && b.estado !== 'asistido') return false;
+
+                if (busqueda) {
+                    const matchId = b.id.toLowerCase().includes(busqueda);
+                    const matchCliente = b.cliente.toLowerCase().includes(busqueda);
+                    return matchId || matchCliente;
                 }
 
-                btn.className = `p-3 rounded-xl border text-xs flex flex-col items-center justify-center transition-all ${colorClass}`;
-                btn.innerHTML = `<span class="text-[10px] opacity-70">#</span><span class="text-sm font-bold">${b.id}</span>`;
-                btn.onclick = () => abrirModalBoleto(b.id);
-                grid.appendChild(btn);
+                return true;
             });
-        }
 
-        function actualizarMetricasUI() {
-            const vendidos = boletosFuncion.filter(b => b.estado === 'vendido' || b.estado === 'asistido').length;
-            const asistidos = boletosFuncion.filter(b => b.estado === 'asistido').length;
-            const recaudado = vendidos * PRECIO_BOLETO;
-
-            document.getElementById('stat-vendidos').innerText = `${vendidos} / 45`;
-            document.getElementById('stat-asistencia').innerText = asistidos;
-            document.getElementById('stat-recaudado').innerText = `$${recaudado.toLocaleString()} MXN`;
-        }
-
-        function abrirModalBoleto(idAsiento) {
-            asientoSeleccionadoModal = idAsiento;
-            const boleto = boletosFuncion.find(b => b.id === idAsiento);
-            if (!boleto) return;
-
-            document.getElementById('modal-num-asiento').innerText = idAsiento;
-            document.getElementById('modal-select-estado').value = boleto.estado;
-            document.getElementById('modal-boleto').classList.remove('hidden');
-        }
-
-        function cerrarModalBoleto() {
-            document.getElementById('modal-boleto').classList.add('hidden');
-            asientoSeleccionadoModal = null;
-        }
-
-        function guardarCambioModal() {
-            if (!asientoSeleccionadoModal) return;
-            const nuevoEstado = document.getElementById('modal-select-estado').value;
-            const boleto = boletosFuncion.find(b => b.id === asientoSeleccionadoModal);
-            
-            if (boleto) {
-                boleto.estado = nuevoEstado;
-                guardarEnStorage();
-            }
-            cerrarModalBoleto();
-        }
-
-        function procesarAsientoManual() {
-            const val = parseInt(document.getElementById('input-asiento-manual').value);
-            if (!val || val < 1 || val > 45) {
-                alert('Ingresa un número de asiento válido entre 1 y 45');
+            if (boletosFiltrados.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full py-12 text-center bg-zinc-900/50 rounded-2xl border border-zinc-800">
+                        <i class="fa-solid fa-ticket-simple text-4xl text-zinc-700 mb-2"></i>
+                        <p class="text-zinc-400 text-sm">No hay boletos que coincidan con el filtro en esta función</p>
+                    </div>
+                `;
                 return;
             }
 
-            const boleto = boletosFuncion.find(b => b.id === val);
-            const boxRes = document.getElementById('scan-resultado');
-            boxRes.classList.remove('hidden');
+            boletosFiltrados.forEach(b => {
+                const card = document.createElement('div');
+                card.className = `p-4 rounded-xl border transition-all duration-200 flex flex-col justify-between relative group ${
+                    b.estado === 'asistido' 
+                        ? 'bg-emerald-950/20 border-emerald-800/50 hover:border-emerald-500/80' 
+                        : b.estado === 'vendido' 
+                        ? 'bg-pink-950/20 border-tape-pink/50 hover:border-tape-pink' 
+                        : 'bg-zinc-900 border-zinc-800 hover:border-zinc-700'
+                }`;
 
-            if (boleto) {
-                if (boleto.estado === 'disponible') {
-                    boleto.estado = 'vendido';
-                    boxRes.className = 'bg-tape-pink/20 border border-tape-pink p-4 rounded-2xl text-center space-y-1';
-                    boxRes.innerHTML = `<p class="font-bold text-tape-pink">Asiento #${val} Marcado como VENDIDO</p>`;
-                } else if (boleto.estado === 'vendido') {
-                    boleto.estado = 'asistido';
-                    boxRes.className = 'bg-emerald-500/20 border border-emerald-500 p-4 rounded-2xl text-center space-y-1';
-                    boxRes.innerHTML = `<p class="font-bold text-emerald-400">Check-In Correcto para Asiento #${val}</p>`;
-                } else {
-                    boleto.estado = 'disponible';
-                    boxRes.className = 'bg-zinc-800 border border-zinc-700 p-4 rounded-2xl text-center space-y-1';
-                    boxRes.innerHTML = `<p class="font-bold text-zinc-300">Asiento #${val} Liberado a DISPONIBLE</p>`;
+                let estadoBadge = '';
+                if (b.estado === 'disponible') {
+                    estadoBadge = `<span class="text-[10px] font-bold px-2 py-0.5 rounded bg-zinc-800 text-zinc-400 border border-zinc-700">DISPONIBLE</span>`;
+                } else if (b.estado === 'vendido') {
+                    estadoBadge = `<span class="text-[10px] font-bold px-2 py-0.5 rounded bg-tape-pink/20 text-tape-pink border border-tape-pink/40">VENDIDO</span>`;
+                } else if (b.estado === 'asistido') {
+                    estadoBadge = `<span class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"><i class="fa-solid fa-check mr-1"></i> ASISTIÓ</span>`;
                 }
-                guardarEnStorage();
-            }
-            document.getElementById('input-asiento-manual').value = '';
+
+                const qrContainerId = `qr-thumb-${b.id}`;
+
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <span class="text-xs text-zinc-400 font-mono font-bold">${b.id}</span>
+                            <h4 class="text-sm font-bold text-zinc-100 truncate max-w-[130px]">${b.cliente ? b.cliente : 'Sin Comprador'}</h4>
+                        </div>
+                        ${estadoBadge}
+                    </div>
+
+                    <!-- Código QR Miniatura -->
+                    <div class="flex items-center justify-center p-3 bg-white rounded-lg my-2 cursor-pointer hover:opacity-90 transition shadow" onclick="abrirModalDetalle('${b.id}')">
+                        <div id="${qrContainerId}" class="qr-thumbnail flex justify-center items-center"></div>
+                    </div>
+
+                    ${b.horaCheckIn ? `<p class="text-[10px] text-emerald-400 text-center font-mono my-1"><i class="fa-solid fa-clock mr-1"></i> Check-in: ${b.horaCheckIn}</p>` : ''}
+
+                    <!-- Botones de Acción -->
+                    <div class="pt-3 mt-2 border-t border-zinc-800/80 flex items-center justify-between gap-2">
+                        <button onclick="toggleEstadoVenta('${b.id}')" class="flex-1 text-xs py-1.5 px-2 rounded-lg font-medium transition ${
+                            b.estado === 'disponible' 
+                                ? 'bg-tape-pink hover:bg-pink-600 text-white font-bold shadow-sm' 
+                                : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300'
+                        }">
+                            ${b.estado === 'disponible' ? '<i class="fa-solid fa-cart-shopping mr-1"></i> Vender' : 'Desmarcar'}
+                        </button>
+
+                        <button onclick="abrirModalDetalle('${b.id}')" class="p-1.5 text-zinc-400 hover:text-tape-pink hover:bg-zinc-800 rounded-lg transition" title="Ver e imprimir boleto PDF">
+                            <i class="fa-solid fa-expand text-xs"></i>
+                        </button>
+                    </div>
+                `;
+
+                container.appendChild(card);
+
+                // Generar QR en miniatura
+                setTimeout(() => {
+                    const elem = document.getElementById(qrContainerId);
+                    if (elem) {
+                        elem.innerHTML = '';
+                        new QRCode(elem, {
+                            text: b.id,
+                            width: 80,
+                            height: 80,
+                            colorDark: "#0c0b10",
+                            colorLight: "#ffffff",
+                            correctLevel: QRCode.CorrectLevel.H
+                        });
+                    }
+                }, 10);
+            });
         }
 
-        // REDIRECCIÓN A FIREBASE (Sin localStorage)
-        function guardarEnStorage() {
-            if (typeof window.guardarBoletosEnNube === 'function') {
-                window.guardarBoletosEnNube();
+        /* ==========================================================================
+           4. FILTROS Y NAVEGACIÓN
+           ========================================================================== */
+        function filtrarBoletos(tipo) {
+            filtroActual = tipo;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.className = 'filter-btn text-xs px-3 py-1.5 rounded-lg bg-zinc-800 text-zinc-300 hover:bg-zinc-700';
+            });
+            const activeBtn = document.getElementById(`filter-${tipo}`);
+            if (activeBtn) {
+                activeBtn.className = 'filter-btn text-xs px-3 py-1.5 rounded-lg bg-tape-pink text-white font-bold';
+            }
+            renderizarBoletos();
+        }
+
+        function buscarBoletos() {
+            renderizarBoletos();
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.className = 'tab-btn px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-zinc-400 hover:text-white hover:bg-zinc-900';
+            });
+
+            document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+            const btnActivo = document.getElementById(`tab-btn-${tabName}`);
+            if (btnActivo) {
+                btnActivo.className = 'tab-btn px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 bg-tape-pink text-white font-semibold shadow-lg shadow-tape-pink/20';
+            }
+
+            if (tabName !== 'escaner' && html5QrCode) {
+                detenerEscaner();
+            }
+        }
+
+        /* ==========================================================================
+           5. GESTIÓN DE VENTAS
+           ========================================================================== */
+        function toggleEstadoVenta(id) {
+            const index = boletosFuncion.findIndex(b => b.id === id);
+            if (index === -1) return;
+
+            if (boletosFuncion[index].estado === 'disponible') {
+                document.getElementById('modal-venta-ticket-id').value = id;
+                document.getElementById('modal-venta-title').innerText = `Vender Boleto ${id}`;
+                document.getElementById('modal-venta-cliente').value = '';
+                document.getElementById('modal-venta').classList.remove('hidden');
+                setTimeout(() => document.getElementById('modal-venta-cliente').focus(), 100);
+            } else {
+                boletosFuncion[index].estado = 'disponible';
+                boletosFuncion[index].cliente = '';
+                boletosFuncion[index].horaCheckIn = null;
+                guardarEnStorage();
+                actualizarMetricasUI();
+                renderizarBoletos();
+                renderizarResumenTodasFunciones();
+            }
+        }
+
+        function cerrarModalVenta() {
+            document.getElementById('modal-venta').classList.add('hidden');
+        }
+
+        function confirmarVentaModal() {
+            const id = document.getElementById('modal-venta-ticket-id').value;
+            const cliente = document.getElementById('modal-venta-cliente').value.trim();
+
+            const index = boletosFuncion.findIndex(b => b.id === id);
+            if (index !== -1) {
+                boletosFuncion[index].estado = 'vendido';
+                boletosFuncion[index].cliente = cliente || 'Cliente General';
+                guardarEnStorage();
+                actualizarMetricasUI();
+                renderizarBoletos();
+                renderizarResumenTodasFunciones();
+            }
+            cerrarModalVenta();
+        }
+
+        /* ==========================================================================
+           6. CÁMARA Y ESCÁNER QR (DIAGNÓSTICO Y SOLUCIÓN A PERMISOS EN MÓVIL)
+           ========================================================================== */
+        function verificarDiagnosticoCamara() {
+            const diagBox = document.getElementById('scanner-diagnostic-msg');
+            const isSecureContext = window.isSecureContext || location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+
+            if (!isSecureContext) {
+                diagBox.classList.remove('hidden');
+                document.getElementById('diag-title').innerText = "Bloqueo de seguridad del navegador movil (No HTTPS)";
+                document.getElementById('diag-desc').innerText = "Los navegadores en celulares (Chrome/Safari) prohíben encender la cámara en vivo cuando el archivo se abre directamente (file://) o bajo un servidor sin HTTPS. ";
+            } else if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                diagBox.classList.remove('hidden');
+                document.getElementById('diag-title').innerText = "Cámara no soportada en este navegador";
+                document.getElementById('diag-desc').innerText = "Tu navegador no expone la API de cámara estándar.";
+            }
+        }
+
+        function iniciarEscanerCamara() {
+            document.getElementById('scanner-placeholder').classList.add('hidden');
+            document.getElementById('btn-stop-scanner').classList.remove('hidden');
+
+            const readerContainer = document.getElementById('reader');
+            readerContainer.innerHTML = '';
+
+            try {
+                html5QrCode = new Html5Qrcode("reader");
+                const config = { fps: 10, qrbox: { width: 220, height: 220 } };
+
+                // Intento 1: Cámara trasera
+                html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess, onScanFailure)
+                    .catch(err => {
+                        console.warn("Fallo cámara 'environment', intentando 'user'", err);
+                        // Intento 2: Cámara frontal o predeterminada
+                        html5QrCode.start({ facingMode: "user" }, config, onScanSuccess, onScanFailure)
+                            .catch(err2 => {
+                                console.warn("Fallo cámara 'user', intentando cámaras por ID", err2);
+                                // Intento 3: Obtener lista de dispositivos
+                                Html5Qrcode.getCameras().then(devices => {
+                                    if (devices && devices.length) {
+                                        const cameraId = devices[0].id;
+                                        html5QrCode.start(cameraId, config, onScanSuccess, onScanFailure);
+                                    } else {
+                                        throw new Error("No se detectó ningún dispositivo de cámara.");
+                                    }
+                                }).catch(err3 => {
+                                    console.error("Error definitivo al iniciar cámara:", err3);
+                                    verificarDiagnosticoCamara();
+                                    document.getElementById('scanner-diagnostic-msg').classList.remove('hidden');
+                                    detenerEscaner();
+                                });
+                            });
+                    });
+            } catch (e) {
+                console.error("Excepción al instanciar Html5Qrcode:", e);
+                detenerEscaner();
+            }
+        }
+
+        function detenerEscaner() {
+            if (html5QrCode) {
+                html5QrCode.stop().then(() => {
+                    html5QrCode.clear();
+                    html5QrCode = null;
+                    document.getElementById('scanner-placeholder').classList.remove('hidden');
+                    document.getElementById('btn-stop-scanner').classList.add('hidden');
+                }).catch(err => {
+                    html5QrCode = null;
+                    document.getElementById('scanner-placeholder').classList.remove('hidden');
+                    document.getElementById('btn-stop-scanner').classList.add('hidden');
+                });
+            } else {
+                document.getElementById('scanner-placeholder').classList.remove('hidden');
+                document.getElementById('btn-stop-scanner').classList.add('hidden');
+            }
+        }
+
+        function escanearArchivoImagen(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const scanner = new Html5Qrcode("reader");
+            scanner.scanFile(file, true)
+                .then(qrCodeMessage => {
+                    validarYRegistrarEntrada(qrCodeMessage);
+                    scanner.clear();
+                })
+                .catch(err => {
+                    alert("No se pudo detectar un código QR legible en la imagen seleccionada. Asegúrate que esté enfocado.");
+                    scanner.clear();
+                });
+        }
+
+        function onScanSuccess(decodedText) {
+            validarYRegistrarEntrada(decodedText.trim());
+        }
+
+        function onScanFailure(error) {
+            // Ignorar parpadeos cuadro a cuadro
+        }
+
+        function procesarIngresoManual(e) {
+            e.preventDefault();
+            const input = document.getElementById('input-codigo-manual');
+            const codigo = input.value.trim().toUpperCase();
+            if (codigo) {
+                validarYRegistrarEntrada(codigo);
+                input.value = '';
+            }
+        }
+
+        function validarYRegistrarEntrada(codigoRaw) {
+            const resultCard = document.getElementById('scan-result-card');
+            const iconContainer = document.getElementById('scan-icon-container');
+            const titleEl = document.getElementById('scan-title');
+            const subtitleEl = document.getElementById('scan-subtitle');
+            const detailsEl = document.getElementById('scan-details');
+
+            const codigoString = codigoRaw.trim().toUpperCase();
+
+            // Búsqueda inteligente por folio completo o por número de asiento simple (ej: "5" o "TAPE-F1-05")
+            let ticketEncontrado = boletosFuncion.find(b => b.id.toUpperCase() === codigoString);
+            if (!ticketEncontrado) {
+                const num = parseInt(codigoString.replace(/\D/g, ''));
+                if (!isNaN(num)) {
+                    ticketEncontrado = boletosFuncion.find(b => b.numero === num);
+                }
+            }
+
+            const ahora = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            const infoFunc = FUNCIONES.find(f => f.id === funcionActualId);
+
+            if (!ticketEncontrado) {
+                // BOLETO INVÁLIDO O PERTENECIENTE A OTRA FUNCIÓN
+                resultCard.className = "bg-amber-950/40 p-6 rounded-2xl border-2 border-amber-500 text-center flex flex-col items-center justify-center min-h-[320px] transition-all duration-300";
+                iconContainer.className = "w-20 h-20 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center mb-4 text-3xl";
+                iconContainer.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
+                titleEl.className = "text-xl font-bold text-amber-400 mb-1";
+                titleEl.innerText = "¡CÓDIGO NO ENCONTRADO!";
+                subtitleEl.innerText = `El folio "${codigoString}" no existe en la Función ${funcionActualId} activa.`;
+                detailsEl.classList.add('hidden');
+                return;
+            }
+
+            if (ticketEncontrado.estado === 'asistido') {
+                // BOLETO YA USADO
+                resultCard.className = "bg-red-950/40 p-6 rounded-2xl border-2 border-red-600 text-center flex flex-col items-center justify-center min-h-[320px] transition-all duration-300";
+                iconContainer.className = "w-20 h-20 rounded-full bg-red-600/20 text-red-400 flex items-center justify-center mb-4 text-3xl";
+                iconContainer.innerHTML = '<i class="fa-solid fa-ban"></i>';
+                titleEl.className = "text-xl font-bold text-red-400 mb-1";
+                titleEl.innerText = "¡BOLETO YA USADO!";
+                subtitleEl.innerText = "Este boleto ya fue ingresado previamente a la sala.";
+
+                document.getElementById('detail-id').innerText = ticketEncontrado.id;
+                document.getElementById('detail-cliente').innerText = ticketEncontrado.cliente || 'Cliente General';
+                document.getElementById('detail-funcion-num').innerText = infoFunc ? infoFunc.label : `Función ${funcionActualId}`;
+                document.getElementById('detail-estado-previo').innerText = "ASISTIÓ PREVIAMENTE";
+                document.getElementById('detail-estado-previo').className = "font-medium text-emerald-400";
+                document.getElementById('detail-hora').innerText = ticketEncontrado.horaCheckIn || 'Previa';
+                detailsEl.classList.remove('hidden');
+
+            } else if (ticketEncontrado.estado === 'disponible') {
+                // BOLETO NO VENDIDO
+                resultCard.className = "bg-red-950/40 p-6 rounded-2xl border-2 border-red-600 text-center flex flex-col items-center justify-center min-h-[320px] transition-all duration-300";
+                iconContainer.className = "w-20 h-20 rounded-full bg-red-600/20 text-red-400 flex items-center justify-center mb-4 text-3xl";
+                iconContainer.innerHTML = '<i class="fa-solid fa-circle-xmark"></i>';
+                titleEl.className = "text-xl font-bold text-red-400 mb-1";
+                titleEl.innerText = "¡BOLETO NO VENDIDO!";
+                subtitleEl.innerText = "El boleto aún figura disponible en Taquilla. No permitir paso.";
+
+                document.getElementById('detail-id').innerText = ticketEncontrado.id;
+                document.getElementById('detail-cliente').innerText = "Sin Vender";
+                document.getElementById('detail-funcion-num').innerText = infoFunc ? infoFunc.label : `Función ${funcionActualId}`;
+                document.getElementById('detail-estado-previo').innerText = "DISPONIBLE";
+                document.getElementById('detail-estado-previo').className = "font-medium text-zinc-400";
+                document.getElementById('detail-hora').innerText = "-";
+                detailsEl.classList.remove('hidden');
+
+            } else if (ticketEncontrado.estado === 'vendido') {
+                // ACCESO AUTORIZADO
+                ticketEncontrado.estado = 'asistido';
+                ticketEncontrado.horaCheckIn = ahora;
+                guardarEnStorage();
+                actualizarMetricasUI();
+                renderizarBoletos();
+                renderizarResumenTodasFunciones();
+
+                resultCard.className = "bg-emerald-950/40 p-6 rounded-2xl border-2 border-emerald-500 text-center flex flex-col items-center justify-center min-h-[320px] transition-all duration-300";
+                iconContainer.className = "w-20 h-20 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mb-4 text-3xl";
+                iconContainer.innerHTML = '<i class="fa-solid fa-circle-check"></i>';
+                titleEl.className = "text-xl font-bold text-emerald-400 mb-1";
+                titleEl.innerText = "¡ACCESO PERMITIDO!";
+                subtitleEl.innerText = "¡Entrada validada correctamente! Bienvenidos a TAPE.";
+
+                document.getElementById('detail-id').innerText = ticketEncontrado.id;
+                document.getElementById('detail-cliente').innerText = ticketEncontrado.cliente || 'Cliente General';
+                document.getElementById('detail-funcion-num').innerText = infoFunc ? infoFunc.label : `Función ${funcionActualId}`;
+                document.getElementById('detail-estado-previo').innerText = "VENDIDO (Válido)";
+                document.getElementById('detail-estado-previo').className = "font-medium text-tape-pink";
+                document.getElementById('detail-hora').innerText = ahora;
+                detailsEl.classList.remove('hidden');
+
+                agregarABitacora(ticketEncontrado.id, ticketEncontrado.cliente, ahora);
+            }
+        }
+
+        function agregarABitacora(id, cliente, hora) {
+            const logsContainer = document.getElementById('recent-logs');
+            if (logsContainer.children.length === 1 && logsContainer.children[0].tagName === 'P') {
+                logsContainer.innerHTML = '';
+            }
+
+            const item = document.createElement('div');
+            item.className = "flex items-center justify-between p-2 rounded-lg bg-zinc-950 border border-zinc-800 text-xs";
+            item.innerHTML = `
+                <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                    <span class="font-mono font-bold text-tape-pink">${id}</span>
+                    <span class="text-zinc-300 truncate max-w-[120px]">${cliente || 'General'}</span>
+                </div>
+                <span class="text-zinc-500 font-mono text-[10px]">${hora}</span>
+            `;
+            logsContainer.insertBefore(item, logsContainer.firstChild);
+
+            const countEl = document.getElementById('log-count');
+            countEl.innerText = parseInt(countEl.innerText || '0') + 1;
+        }
+
+        /* ==========================================================================
+           7. MODAL DETALLE E IMPRESIÓN PDF EN 1 PÁGINA (CON CARTEL)
+           ========================================================================== */
+        function abrirModalDetalle(id) {
+            const b = boletosFuncion.find(item => item.id === id);
+            if (!b) return;
+
+            boletoSeleccionadoId = id;
+            const infoFunc = FUNCIONES.find(f => f.id === funcionActualId);
+
+            document.getElementById('preview-ticket-id').innerText = b.id;
+            document.getElementById('preview-precio').innerText = `$${PRECIO_BOLETO} MXN`;
+            document.getElementById('preview-cliente').innerText = b.cliente || 'Cliente General';
+            document.getElementById('preview-horario').innerText = infoFunc ? infoFunc.label : `Función ${funcionActualId}`;
+            document.getElementById('preview-qr-code-str').innerText = b.id;
+
+            const badge = document.getElementById('preview-badge-estado');
+            if (b.estado === 'disponible') {
+                badge.innerText = 'DISPONIBLE';
+                badge.className = 'text-[10px] font-bold px-2 py-0.5 rounded bg-zinc-800 text-zinc-300';
+            } else if (b.estado === 'vendido') {
+                badge.innerText = 'VENDIDO';
+                badge.className = 'text-[10px] font-bold px-2 py-0.5 rounded bg-tape-pink text-white';
+            } else {
+                badge.innerText = 'ASISTIÓ';
+                badge.className = 'text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500 text-zinc-950';
+            }
+
+            const qrContainer = document.getElementById('single-qr-container');
+            qrContainer.innerHTML = '';
+            new QRCode(qrContainer, {
+                text: b.id,
+                width: 140,
+                height: 140,
+                colorDark: "#0c0b10",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+
+            document.getElementById('modal-detalle').classList.remove('hidden');
+        }
+
+        function cerrarModalDetalle() {
+            document.getElementById('modal-detalle').classList.add('hidden');
+        }
+
+        function obtenerQRDataUrl(texto, tamaño = 180) {
+            return new Promise((resolve) => {
+                const tempDiv = document.createElement('div');
+                document.body.appendChild(tempDiv);
+                new QRCode(tempDiv, {
+                    text: texto,
+                    width: tamaño,
+                    height: tamaño,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+
+                setTimeout(() => {
+                    let imgData = '';
+                    const img = tempDiv.querySelector('img');
+                    const canvas = tempDiv.querySelector('canvas');
+                    if (img && img.src) {
+                        imgData = img.src;
+                    } else if (canvas) {
+                        imgData = canvas.toDataURL("image/png");
+                    }
+                    document.body.removeChild(tempDiv);
+                    resolve(imgData);
+                }, 60);
+            });
+        }
+
+        async function imprimirBoletoUnicoPDF() {
+            if (!boletoSeleccionadoId) return;
+            const b = boletosFuncion.find(item => item.id === boletoSeleccionadoId);
+            if (!b) return;
+
+            const infoFunc = FUNCIONES.find(f => f.id === funcionActualId);
+            const qrDataUrl = await obtenerQRDataUrl(b.id, 200);
+            const printArea = document.getElementById('printableArea');
+
+            // Renderizado estricto del boleto listo para PDF en 1 SOLA PÁGINA A4 con el Cartel del Cubo
+            printArea.innerHTML = `
+                <div style="width: 100%; max-width: 580px; border: 3px solid #000; padding: 24px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background: #fff; color: #000; box-sizing: border-box; border-radius: 12px; position: relative;">
+                    
+                    <!-- Encabezado con Cartel e Información de la Obra -->
+                    <div style="display: flex; gap: 20px; border-bottom: 2px solid #000; padding-bottom: 16px; margin-bottom: 16px; align-items: center;">
+                        
+                        <!-- SVG Cartel Cubo en Impresión -->
+                        <div style="width: 110px; height: 140px; border: 2px solid #000; background: #0c0b10; border-radius: 8px; flex-shrink: 0; padding: 4px; box-sizing: border-box;">
+                            <svg viewBox="0 0 300 400" style="width: 100%; height: 100%; display: block;">
+                                <rect width="100%" height="100%" fill="#0a090e"/>
+                                <path d="M 150 40 L 270 110 L 270 290 L 150 360 L 30 290 L 30 110 Z" stroke="#e63956" stroke-width="4" fill="none"/>
+                                <path d="M 150 40 L 150 360" stroke="#a855f7" stroke-width="3"/>
+                                <path d="M 30 110 L 150 180 L 270 110" stroke="#05d9e8" stroke-width="3"/>
+                                <text x="150" y="325" font-family="sans-serif" font-size="65" font-weight="bold" fill="#ffffff" text-anchor="middle">TAPE</text>
+                            </svg>
+                        </div>
+
+                        <div style="flex: 1;">
+                            <span style="font-size: 10px; font-weight: bold; letter-spacing: 2px; text-transform: uppercase; color: #e63956; display: block; margin-bottom: 2px;">BOLETO OFICIAL DE ENTRADA</span>
+                            <h1 style="font-size: 38px; font-weight: 900; margin: 0; line-height: 1; letter-spacing: 1px;">TAPE</h1>
+                            <p style="margin: 6px 0 2px 0; font-size: 13px; font-weight: bold;">De Stephen Belber | Dir. Andrés Córdova</p>
+                            <p style="margin: 2px 0; font-size: 11px; color: #333;">El77 Centro Cultural Autogestivo (Abraham González #77, Col Juárez)</p>
+                            <p style="margin: 4px 0 0 0; font-size: 11px; font-weight: bold; color: #000;">PRODUCCIÓN: TEMPESTADES PRODUCTORA</p>
+                        </div>
+                    </div>
+
+                    <!-- Datos Específicos de la Función y Asistente -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; background: #f8f8f8; border: 1px solid #ddd; padding: 12px; border-radius: 8px; font-size: 12px; margin-bottom: 16px;">
+                        <div>
+                            <span style="font-size: 10px; color: #666; font-weight: bold; display: block; uppercase">FOLIO ASIGNADO:</span>
+                            <strong style="font-size: 20px; font-family: monospace; color: #e63956;">${b.id}</strong>
+                        </div>
+                        <div>
+                            <span style="font-size: 10px; color: #666; font-weight: bold; display: block; uppercase">PRECIO DEL BOLETO:</span>
+                            <strong style="font-size: 18px; color: #000;">$${PRECIO_BOLETO} MXN</strong>
+                        </div>
+                        <div>
+                            <span style="font-size: 10px; color: #666; font-weight: bold; display: block; uppercase">TITULAR DEL BOLETO:</span>
+                            <strong style="font-size: 13px; color: #111;">${b.cliente || 'Cliente General'}</strong>
+                        </div>
+                        <div>
+                            <span style="font-size: 10px; color: #666; font-weight: bold; display: block; uppercase">FUNCIÓN SELECCIONADA:</span>
+                            <strong style="font-size: 13px; color: #111;">${infoFunc ? infoFunc.fechaStr : ''} (${infoFunc ? infoFunc.hora : ''})</strong>
+                        </div>
+                    </div>
+
+                    <!-- Elenco -->
+                    <div style="text-align: center; font-size: 10px; color: #333; margin-bottom: 16px; border-bottom: 1px border-dashed #ccc; padding-bottom: 8px;">
+                        <strong>ELENCO:</strong> Rodrigo Ríaz, José Daniel Rosales, Iván Cuevas, Daniela Plaza, Estefanía Rios
+                    </div>
+
+                    <!-- Código QR Centrado -->
+                    <div style="text-align: center; margin: 10px 0;">
+                        <img src="${qrDataUrl}" alt="QR" style="width: 180px; height: 180px; display: block; margin: 0 auto; border: 1px solid #000; padding: 6px; background: #fff;" />
+                        <p style="font-family: monospace; font-size: 14px; font-weight: bold; margin-top: 8px; letter-spacing: 1px;">${b.id}</p>
+                    </div>
+
+                    <!-- Footer -->
+                    <div style="text-align: center; font-size: 9px; color: #555; border-top: 1px dashed #000; padding-top: 10px; margin-top: 10px;">
+                        Presenta este boleto digital o impreso con el código QR visible en el acceso de El77 Centro Cultural.<br>
+                        Presented by arrangement with Nick Hern Books Ltd.
+                    </div>
+                </div>
+            `;
+
+            printArea.classList.remove('hidden');
+            setTimeout(() => {
+                window.print();
+                printArea.classList.add('hidden');
+            }, 250);
+        }
+
+        /* ==========================================================================
+           8. MÉTRICAS Y RESUMEN DE TODAS LAS FUNCIONES
+           ========================================================================== */
+        function actualizarMetricasUI() {
+            const total = boletosFuncion.length;
+            const vendidos = boletosFuncion.filter(b => b.estado === 'vendido' || b.estado === 'asistido').length;
+            const asistidos = boletosFuncion.filter(b => b.estado === 'asistido').length;
+            const disponibles = total - vendidos;
+            const pendientesIngreso = vendidos - asistidos;
+            const recaudacionActual = vendidos * PRECIO_BOLETO;
+
+            document.getElementById('stat-total').innerText = total;
+            document.getElementById('stat-vendidos').innerText = vendidos;
+            document.getElementById('stat-asistidos').innerText = asistidos;
+            document.getElementById('stat-recaudacion').innerText = `$${recaudacionActual.toLocaleString()} MXN`;
+
+            const pctVendidos = Math.round((vendidos / total) * 100) || 0;
+            const pctAsistidos = Math.round((asistidos / total) * 100) || 0;
+
+            document.getElementById('pct-vendidos-text').innerText = `${pctVendidos}% (${vendidos}/${total})`;
+            document.getElementById('bar-vendidos').style.width = `${pctVendidos}%`;
+
+            document.getElementById('pct-asistidos-text').innerText = `${pctAsistidos}% (${asistidos}/${total})`;
+            document.getElementById('bar-asistidos').style.width = `${pctAsistidos}%`;
+
+            document.getElementById('summary-disponibles').innerText = disponibles;
+            document.getElementById('summary-pendientes').innerText = pendientesIngreso;
+            document.getElementById('summary-ingresados').innerText = asistidos;
+        }
+
+        function renderizarResumenTodasFunciones() {
+            const container = document.getElementById('resumen-todas-funciones');
+            container.innerHTML = '';
+
+            let recaudacionAcumuladaTemporada = 0;
+
+            FUNCIONES.forEach(f => {
+                const savedData = localStorage.getItem(STORAGE_KEY_PREFIX + f.id);
+                let list = [];
+                if (savedData) {
+                    try { list = JSON.parse(savedData); } catch(e) {}
+                }
+
+                const v = list.filter(b => b.estado === 'vendido' || b.estado === 'asistido').length;
+                const a = list.filter(b => b.estado === 'asistido').length;
+                const rec = v * PRECIO_BOLETO;
+                recaudacionAcumuladaTemporada += rec;
+
+                const row = document.createElement('div');
+                row.className = `p-2.5 rounded-lg border flex items-center justify-between ${f.id === funcionActualId ? 'bg-tape-pink/15 border-tape-pink/50' : 'bg-zinc-950 border-zinc-800'}`;
+                row.innerHTML = `
+                    <div>
+                        <p class="font-semibold text-zinc-200">Función ${f.id}: <span class="text-xs text-zinc-400">${f.label}</span></p>
+                        <p class="text-[10px] text-zinc-500">Vendidos: ${v}/45 | Asistieron: ${a}</p>
+                    </div>
+                    <div class="text-right">
+                        <span class="font-bold text-tape-pink font-mono">$${rec.toLocaleString()} MXN</span>
+                    </div>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        function confirmarResetFuncionActual() {
+            if (confirm(`¿Deseas reiniciar los 45 boletos únicamente de la Función ${funcionActualId}?`)) {
+                generarBoletosBaseFuncion(funcionActualId);
+                actualizarMetricasUI();
+                renderizarBoletos();
+                renderizarResumenTodasFunciones();
+                document.getElementById('recent-logs').innerHTML = '<p class="text-zinc-600 italic text-center py-4">No hay ingresos registrados en esta función</p>';
+                document.getElementById('log-count').innerText = '0';
             }
         }
     </script>
-
     <!-- ==========================================================================
-         MÓDULO FIREBASE FIRESTORE EN TIEMPO REAL
+         SCRIPT INTEGRADO: FIREBASE FIRESTORE EN TIEMPO REAL
          ========================================================================== -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -340,7 +1293,7 @@ Aquí tienes el **código HTML completo e integrado** con todos los arreglos apl
         // Configuración de Firebase corregida
         const firebaseConfig = {
             apiKey: "AIzaSyBKmFsUKt81VnBNPoioLFnRSGQLCNf2GCY",
-            authDomain: "tapeboletos.firebaseapp.com",
+            authDomain: "tapeboletos.firebaseapp.com", // Corregido: comillas duplicadas eliminadas
             projectId: "tapeboletos",
             storageBucket: "tapeboletos.firebasestorage.app",
             messagingSenderId: "418792138338",
@@ -350,10 +1303,11 @@ Aquí tienes el **código HTML completo e integrado** con todos los arreglos apl
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
+        // Variable para cancelar la escucha previa al cambiar de función
         let desuscubrirFuncionActual = null;
 
         // GUARDAR BOLETOS EN LA NUBE
-        window.guardarBoletosEnNube = async function() {
+        window.guardarEnStorage = async function() {
             try {
                 const docId = `funcion_${funcionActualId}`;
                 await setDoc(doc(db, "funciones", docId), {
@@ -365,8 +1319,9 @@ Aquí tienes el **código HTML completo e integrado** con todos los arreglos apl
             }
         };
 
-        // ESCUCHAR EN TIEMPO REAL LA FUNCIÓN ACTIVA
-        window.escucharBoletosEnTiempoReal = function(idFunc) {
+        // ESCUCHAR CAMBIOS DE LA FUNCIÓN ACTIVA EN TIEMPO REAL
+        window.escucharFuncionNube = function(idFunc) {
+            // Detener suscripción a la función anterior si existe
             if (desuscubrirFuncionActual) {
                 desuscubrirFuncionActual();
             }
@@ -377,8 +1332,9 @@ Aquí tienes el **código HTML completo e integrado** con todos los arreglos apl
                 if (documento.exists()) {
                     boletosFuncion = documento.data().boletos || [];
                 } else {
+                    // Si es la primera vez que se abre la función, crea los 45 boletos iniciales
                     generarBoletosBaseFuncion(idFunc);
-                    window.guardarBoletosEnNube();
+                    window.guardarEnStorage();
                 }
 
                 actualizarMetricasUI();
@@ -386,7 +1342,7 @@ Aquí tienes el **código HTML completo e integrado** con todos los arreglos apl
             });
         };
 
-        // LEER RESUMEN DE LAS 7 FUNCIONES PARA EL TAB 3
+        // LEER RESUMEN DE LAS 7 FUNCIONES PARA EL TAB DE ESTADÍSTICAS
         window.renderizarResumenTodasFunciones = function() {
             const container = document.getElementById('resumen-todas-funciones');
             container.innerHTML = '';
@@ -394,6 +1350,7 @@ Aquí tienes el **código HTML completo e integrado** con todos los arreglos apl
             FUNCIONES.forEach(f => {
                 const docId = `funcion_${f.id}`;
                 
+                // Escuchar cada función individualmente para armar la tabla general
                 onSnapshot(doc(db, "funciones", docId), (documento) => {
                     let list = [];
                     if (documento.exists()) {
@@ -425,21 +1382,24 @@ Aquí tienes el **código HTML completo e integrado** con todos los arreglos apl
             });
         };
 
-        // CARGAR FUNCIÓN
+        // REEMPLAZAR LA FUNCIÓN 'cargarFuncion' ORIGINAL
         window.cargarFuncion = function(idFunc) {
-            funcionActualId = idFunc;
             const infoFunc = FUNCIONES.find(f => f.id === idFunc);
             if (infoFunc) {
                 document.getElementById('lbl-fecha-activa').innerText = `${infoFunc.fechaStr} (${infoFunc.hora})`;
+                document.getElementById('scan-lbl-funcion').innerText = `${idFunc} (${infoFunc.label})`;
+                document.getElementById('summary-num-func').innerText = idFunc;
             }
 
-            window.escucharBoletosEnTiempoReal(idFunc);
+            // Iniciar la escucha en tiempo real de la función seleccionada
+            window.escucharFuncionNube(idFunc);
             window.renderizarResumenTodasFunciones();
         };
 
-        // INICIALIZACIÓN
+        // Iniciar la app al cargar la página
         window.onload = function() {
             cargarFuncion(1);
+            verificarDiagnosticoCamara();
         };
     </script>
 </body>
